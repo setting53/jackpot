@@ -1,0 +1,86 @@
+#include <stdio.h>
+
+int main() {
+    int i, j, k, n, frames, faults = 0, hit = 0;
+    int pages[30], temp[10], count[10], time = 0, pos;
+
+    printf("Enter number of pages: ");
+    scanf("%d", &n);
+
+    printf("Enter page reference string: ");
+    for(i = 0; i < n; ++i)
+        scanf("%d", &pages[i]);
+
+    printf("Enter number of frames: ");
+    scanf("%d", &frames);
+
+    for(i = 0; i < frames; ++i) {
+        temp[i] = -1;    // initialize frames as empty
+        count[i] = 0;
+    }
+
+    printf("\nPage Reference String: ");
+    for(i = 0; i < n; ++i)
+        printf("%d ", pages[i]);
+    printf("\n\n");
+
+    for(i = 0; i < n; ++i) {
+        int flag1 = 0, flag2 = 0;
+
+        // Check if page already in frame (HIT)
+        for(j = 0; j < frames; ++j) {
+            if(temp[j] == pages[i]) {
+                hit++;
+                time++;
+                count[j] = time;  // update recent use time
+                flag1 = flag2 = 1;
+                break;
+            }
+        }
+
+        // If not found (PAGE FAULT)
+        if(flag1 == 0) {
+            for(j = 0; j < frames; ++j) {
+                if(temp[j] == -1) { // empty frame
+                    faults++;
+                    time++;
+                    temp[j] = pages[i];
+                    count[j] = time;
+                    flag2 = 1;
+                    break;
+                }
+            }
+        }
+
+        // If no empty frame, replace LRU page
+        if(flag2 == 0) {
+            int min = count[0];
+            pos = 0;
+            for(j = 1; j < frames; ++j) {
+                if(count[j] < min) {
+                    min = count[j];
+                    pos = j;
+                }
+            }
+
+            faults++;
+            time++;
+            temp[pos] = pages[i];
+            count[pos] = time;
+        }
+
+        printf("After accessing %d: ", pages[i]);
+        for(k = 0; k < frames; ++k) {
+            if(temp[k] != -1)
+                printf("%d ", temp[k]);
+            else
+                printf("- ");
+        }
+        printf("\n");
+    }
+
+    printf("\nTotal Page Faults = %d", faults);
+    printf("\nTotal Hits = %d\n", hit);
+
+    return 0;
+}
