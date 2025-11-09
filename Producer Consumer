@@ -1,0 +1,60 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int mutex = 1;      // Controls critical section
+int full = 0;       // Number of full slots
+int empty = 3;      // Number of empty slots (buffer size = 3)
+int x = 0;          // Item counter
+
+void wait(int *s) { (*s)--; }   // Semaphore wait operation
+void signal(int *s) { (*s)++; } // Semaphore signal operation
+
+void producer() {
+    wait(&mutex);   // Enter critical section
+    wait(&empty);   // Check if buffer has space
+    x++;
+    printf("\nProducer produces item %d", x);
+    signal(&full);  // Increase full slots
+    signal(&mutex); // Exit critical section
+}
+
+void consumer() {
+    wait(&mutex);   // Enter critical section
+    wait(&full);    // Check if buffer has items
+    printf("\nConsumer consumes item %d", x);
+    x--;
+    signal(&empty); // Increase empty slots
+    signal(&mutex); // Exit critical section
+}
+
+int main() {
+    int n;
+    printf("\n1. Producer\n2. Consumer\n3. Exit");
+
+    while(1) {
+        printf("\n\nEnter your choice: ");
+        scanf("%d", &n);
+
+        switch(n) {
+            case 1:
+                if((mutex == 1) && (empty != 0))
+                    producer();
+                else
+                    printf("\nBuffer is full!");
+                break;
+
+            case 2:
+                if((mutex == 1) && (full != 0))
+                    consumer();
+                else
+                    printf("\nBuffer is empty!");
+                break;
+
+            case 3:
+                exit(0);
+
+            default:
+                printf("\nInvalid choice!");
+        }
+    }
+}
